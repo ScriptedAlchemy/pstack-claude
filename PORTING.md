@@ -1,0 +1,75 @@
+# Porting pstack to Claude Code
+
+This port is native. Each skill reads as if it were written for Claude Code. There is no adapter file to read first, and no prose saying "in Claude Code, do X instead". Apply this table when you port a file, whether during the initial port or when you sync an upstream change. Keep upstream's voice, structure, and wording everywhere the table does not apply. Make the smallest change that removes the Cursor name.
+
+`scripts/codemod.mjs` applies the mechanical rows. `scripts/check-native.mjs` is the gate. It fails on any Cursor name, any dangling relative link, and any skill whose frontmatter `name` differs from its folder.
+
+## Tools
+
+| Cursor | Claude Code |
+| --- | --- |
+| `Task` | `Agent` |
+| `AskQuestion` | `AskUserQuestion`. It is absent in `claude -p`, so ask in plain text there. |
+| A todolist | `TaskCreate` and `TaskUpdate`, or `TodoWrite`, whichever the session offers. Without one, keep the list in the reply. |
+| Run another pstack skill | pstack skills set `disable-model-invocation: true`, so the `Skill` tool refuses them. Link the skill (`the [**how**](../how/SKILL.md) skill`) and the agent reads and follows its `SKILL.md`. When telling the user what to type, write `/pstack:<name>`. |
+| `Grep`, `Glob` | Use them when the session has them, otherwise `rg` through `Bash`. |
+| Cursor's `create-skill` | The `skill-creator` skill when installed (for example `anthropic-skills:skill-creator`, or `plugin-dev:skill-development`). Otherwise write the `SKILL.md` directly in the Agent Skills format. |
+
+## Subagent fields
+
+| Cursor | Claude Code |
+| --- | --- |
+| `subagent_type: generalPurpose` | `subagent_type: "general-purpose"` |
+| `poteto-agent`, `comment-sicko` | `pstack:poteto-agent`, `pstack:comment-sicko` |
+| `readonly: true` | `subagent_type: "Explore"`. It keeps `Bash`, so the brief also says "do not edit files", and the parent checks `git status` afterward. |
+| `readonly: false` | `subagent_type: "general-purpose"` (or `pstack:poteto-agent` where poteto-mode prescribes it). |
+| `environment: "cloud"` | `isolation: "worktree"`. Name the branch or commit the worker checks out. |
+| `environment: "local"` | Omit. |
+| `cloud_base_branch: <b>` | Tell the worker to check out `<b>` first. |
+| `run_in_background: true` | Same field. Agents run in the background by default and notify the parent when they finish. |
+| `resume` | `SendMessage` to the agent's ID or name, when the follow-up needs state that lives in that agent. Otherwise spawn a fresh agent and paste the earlier result into its brief. |
+| `file_attachments` | List the paths in the brief. |
+
+## Models
+
+The `Agent` tool takes `model` (`opus`, `sonnet`, `haiku`, `fable`) and `effort` (`low`, `medium`, `high`, `xhigh`, `max`). A pstack model value is `<model> <effort>`, such as `opus xhigh`. The effort is the last token. If a model does not take a level, use its nearest level.
+
+| Cursor slug | Claude Code value |
+| --- | --- |
+| `claude-opus-5-5-<effort>` | `opus <effort>` |
+| `grok-4.7-<effort>-fast` (the fast code and exploration worker) | `sonnet <effort>` |
+| Any other non-Claude slug | Omit `model`, so the agent runs on the session model. |
+| `inherit-parent`, `auto` | Kept as pstack values. Both omit `model`. |
+
+Panels that paired Opus with Grok pair `opus` with `sonnet`. Where upstream relies on a different model family for diversity (the arena cross-judge pool), prefer a model that differs from the parent session's model.
+
+The override sheet is `~/.claude/rules/pstack-models.md`, with no frontmatter. Claude Code loads every `.md` file in `~/.claude/rules/` into each new session, so the role lines are in context. If they are not, read the file. If the file or a role's line is missing, use the skill's default.
+
+## Paths
+
+| Cursor | Claude Code |
+| --- | --- |
+| `.cursor/skills/`, `~/.cursor/skills/` | `.claude/skills/`, `~/.claude/skills/` |
+| `~/.cursor/plugins/`, `.cursor-plugin/plugin.json` | `~/.claude/plugins/`, `.claude-plugin/plugin.json` |
+| `.cursor/rules/*.mdc`, always-applied rules, Custom Modes | `CLAUDE.md` (or `AGENTS.md` when the project has no `CLAUDE.md`). The model sheet is the exception. |
+| `https://github.com/cursor/plugins/blob/main/pstack/<path>` | A relative link to the local copy when the file ships in this plugin. |
+| `~/.cursor/projects/<slug>/agent-transcripts/` | `~/.claude/projects/<slug>/<session>.jsonl`. The slug is the workspace path with each `/` and `.` changed to `-`, so `/Users/you/proj` is `-Users-you-proj`. The newest `.jsonl` in that folder is the current session, and `<session>/subagents/` holds its subagent transcripts. Read only this workspace's folder. |
+
+## Features without a Cursor-identical equivalent
+
+| Cursor | Claude Code |
+| --- | --- |
+| Cursor Automations (scheduled routines) | Scheduled cloud routines through the `schedule` skill (`/schedule`), or `/loop` inside a running session. |
+| Automation webhooks, event triggers | A GitHub Actions workflow running `anthropics/claude-code-action` on the event, or a scheduled routine that polls. Say which one the step uses. |
+| `update_state` routine memory | A durable file the routine owns (a ledger in the repo or a gist), or labels and comments on the tracked issue. |
+| `SendToUser` secret requests | The routine's or workflow's secret store (routine environment, GitHub Actions secrets). Never ask for a secret in chat. |
+| Bugbot | An automated PR-review bot. Its comments are ordinary GitHub review threads. To request a review from Claude, run `/code-review` (add `--comment` to post inline comments) or mention `@claude` where the Claude GitHub app is installed. |
+| Cursor cloud agents | `isolation: "worktree"` for parallel workers. A session on Claude Code on the web for remote work. `claude --resume <session-id>` to pick up a local session. |
+| A built-in PR tool | `gh`. |
+| Cursor's model picker | `/model`. |
+
+When a step has no Claude Code equivalent at all, write one line in the reply, `Skipped: <step>. <reason>.`, and continue. Do not stop, ask, or retry.
+
+## Attribution
+
+Cursor appears only where it credits the source: the root and plugin READMEs, `LICENSE`, the manifest's `homepage`, and `UPSTREAM.json`. `scripts/native-allowlist.json` lists each allowed line with its reason.
