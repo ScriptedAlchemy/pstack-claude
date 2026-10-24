@@ -85,7 +85,7 @@ The baseline does not reproduce, the patched app cannot run, or the evidence doe
 
 - Do not claim success.
 - State which half could not be measured.
-- Keep the result in the operations thread or run output.
+- Keep the result in the operations thread or run transcript.
 - Post nothing in the source thread unless a direct question requires an answer.
 
 ## Cleanup

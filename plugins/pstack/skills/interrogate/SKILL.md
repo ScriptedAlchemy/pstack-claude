@@ -28,14 +28,14 @@ Launch all reviewers in a single message with the Agent tool, one per entry on t
 
 | Subagent | Default model |
 |----------|---------------|
-| Reviewer A | `claude-opus-5-5-xhigh` |
-| Reviewer B | `grok-4.7-xhigh-fast` |
+| Reviewer A | `opus xhigh` |
+| Reviewer B | `sonnet xhigh` |
 
-Each reviewer gets `subagent_type: general-purpose`, `readonly: true`, and `model` set to its configured entry, or its table default when there is no configured line. Omit `model` for an `auto` or `inherit-parent` entry, so that reviewer runs on the parent model.
+Each reviewer gets `subagent_type: "general-purpose"`, a brief that says not to edit files, and `model` and `effort` from its configured `<model> <effort>` entry, or its table default when there is no configured line. Omit `model` for an `auto` or `inherit-parent` entry, so that reviewer runs on the parent model.
 
-If the Agent tool rejects a configured entry, run that reviewer on its family's table default and say so. Families go by prefix: `claude-*`, and `grok-*` with `cursor-grok-*` and `composer-*`. A refused `composer-*` entry runs on Reviewer B's default. With no family match, use Reviewer A's default. If it rejects a table default, spawn with the closest equivalent from the valid slugs in its error message (prefer the same family and reasoning tier), and open a separate PR to update the default table. Do not block the review on the slug issue. Never treat an alias entry as a rejected slug or apply either fallback to it.
+If the `Agent` tool rejects a configured entry, run that reviewer on its model's table default and say so. An entry naming `opus` falls back to Reviewer A's default, and one naming `sonnet` to Reviewer B's. With no match, use Reviewer A's default. If it rejects a table default, spawn with the closest equivalent from the valid values in its error message (prefer the same model and effort), and open a separate PR to update the default table. Do not block the review on the model issue. Never treat an alias entry as a rejected value or apply either fallback to it.
 
-Read `references/reviewer-prompt.md` and fill in the same template for every reviewer with the stated intent, the diff or file contents, the rubric from `references/rubric.md`, and the code-quality lens from `references/code-quality-review.md`. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **poteto-mode** skill.
+Read `references/reviewer-prompt.md` and fill in the same template for every reviewer with the stated intent, the diff or file contents, the rubric from `references/rubric.md`, and the code-quality lens from `references/code-quality-review.md`. Pick each subagent's reasoning level for the job, per the Subagents section of the [**poteto-mode**](../poteto-mode/SKILL.md#subagents) skill. After the reviewers return, check `git status` for edits they should not have made.
 
 ## Step 4, Synthesize
 

@@ -1,1 +1,4 @@
-[]
+[
+  { "path": "README.md", "text": "this is a claude code port of Lauren Tan's (poteto's) pstack, from [cursor/plugins]", "reason": "credits the upstream source" },
+  { "path": ".claude-plugin/plugin.json", "text": "\"url\": \"https://github.com/cursor/plugins/tree/main/pstack\"", "reason": "author link to the upstream source" }
+]

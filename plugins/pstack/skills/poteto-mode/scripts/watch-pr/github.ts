@@ -326,33 +326,6 @@ function parseComment(value: unknown): T.ReviewComment {
     createdAt: string(object.createdAt, "review comment.createdAt"),
   };
 }
-function isBugbot(comment: T.ReviewComment | null): boolean {
-  if (comment === null) return false;
-  const author = (comment.authorLogin ?? "").toLowerCase();
-  const body = comment.body.toLowerCase();
-  return (
-    author.includes("bugbot") ||
-    (author === "cursor" &&
-      [
-        "bugbot",
-        "cursor_automation_id",
-        "agentic security review",
-        "description start",
-        "severity",
-      ].some((token) => body.includes(token)))
-  );
-}
-function passKey(comment: T.ReviewComment | null): string | null {
-  if (comment === null) return null;
-  for (const pattern of [
-    /RUN_ID:\s*([a-zA-Z0-9_.:-]+)/,
-    /CURSOR_AUTOMATION_ID:\s*([a-zA-Z0-9_.:-]+)/,
-  ]) {
-    const match = pattern.exec(comment.body);
-    if (match?.[1]) return match[1];
-  }
-  return null;
-}
 export function parseReviewThreadPage(value: unknown): T.ReviewThreadPage {
   const reviewThreads = record(
     at(value, ["data", "repository", "pullRequest", "reviewThreads"]),
@@ -377,32 +350,11 @@ export function parseReviewThreadPage(value: unknown): T.ReviewThreadPage {
   const page = record(reviewThreads.pageInfo, "reviewThreads.pageInfo");
   if (typeof page.hasNextPage !== "boolean")
     missing("reviewThreads.pageInfo.hasNextPage", page.hasNextPage);
-  const cursor = optionalString(
+  const next = optionalString(
     page.endCursor,
     "reviewThreads.pageInfo.endCursor"
   );
-  return { threads, endCursor: page.hasNextPage && cursor ? cursor : null };
-}
-export function buildReviewThreads(
-  threads: readonly T.RawReviewThread[]
-): readonly T.ReviewThread[] {
-  const keys = new Set<string>();
-  let keyless = false;
-  for (const thread of threads) {
-    if (!isBugbot(thread.firstComment)) continue;
-    const key = passKey(thread.firstComment);
-    if (key === null) keyless = true;
-    else keys.add(key);
-  }
-  const passes = keys.size > 0 ? keys.size : keyless ? 1 : 0;
-  return threads
-    .filter((thread) => !thread.resolved)
-    .map(({ id, firstComment }) => ({
-      id,
-      firstComment,
-      isBugbot: isBugbot(firstComment),
-      bugbotReviewPasses: passes,
-    }));
+  return { threads, endCursor: page.hasNextPage && next ? next : null };
 }
 export function parsePullRequest(
   value: unknown,
@@ -570,11 +522,11 @@ export class GhGitHubReader implements T.GitHubReader {
     const page = record(contexts.pageInfo, "contexts.pageInfo");
     if (typeof page.hasNextPage !== "boolean")
       missing("contexts.pageInfo.hasNextPage", page.hasNextPage);
-    const cursor = optionalString(
+    const next = optionalString(
       page.endCursor,
       "contexts.pageInfo.endCursor"
     );
-    return { checks, endCursor: page.hasNextPage && cursor ? cursor : null };
+    return { checks, endCursor: page.hasNextPage && next ? next : null };
   }
   async reviewThreadPage(
     context: T.PrContext,
@@ -643,7 +595,9 @@ export async function resolveReviewThreads(
     threads.push(...page.threads);
     after = page.endCursor;
   } while (after !== null);
-  return buildReviewThreads(threads);
+  return threads
+    .filter((thread) => !thread.resolved)
+    .map(({ id, firstComment }) => ({ id, firstComment }));
 }
 export async function resolveContext(args: {
   readonly reader: T.GitHubReader;

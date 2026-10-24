@@ -1,6 +1,6 @@
 ---
 name: reproduce-and-fix-issues
-description: Reproduce triaged Slack bugs through a configured app-control adapter, verify existing fixes, and open a bounded draft pull request only after before-and-after proof. Use only from the configured Benny repro automation.
+description: Reproduce triaged Slack bugs through a configured app-control adapter, verify existing fixes, and open a bounded draft pull request only after before-and-after proof. Use only from the configured Benny repro scheduled task.
 disable-model-invocation: true
 ---
 
@@ -8,7 +8,9 @@ disable-model-invocation: true
 
 Wait for a trusted triage marker in the source thread. Reproduce the exact symptom through the target app's real UI. Verify an existing fix when one exists. Attempt a bounded fix only after a confirmed repro.
 
-Load the external Benny configuration supplied by the automation. If the config, required actions, control adapter, or completed feature map is missing, fail closed.
+Load the external Benny configuration supplied by the scheduled task. If the config, required actions, control adapter, or completed feature map is missing, fail closed.
+
+The runner in `../../SCHEDULING.md` supplies the trigger, owns the ledger, and resumes any wait that outlasts this run. Record each external write in the ledger before and after it, and never repeat a write the ledger cannot confirm.
 
 ## Hard safety rules
 
@@ -18,7 +20,8 @@ Load the external Benny configuration supplied by the automation. If the config,
 - The coordinator is the only Slack poster.
 - Delegated analysis workers are read-only and return findings or media notes.
 - A fix-phase code worker may edit only when its environment provably excludes Slack credentials and every Slack write action. Otherwise the coordinator edits.
-- Every child prompt must explicitly forbid `SendSlackMessage`, `PostToSlack`, `chat.postMessage`, and all other Slack writes.
+- Every child prompt must explicitly forbid `SendSlackMessage`, `PostToSlack`, `chat.postMessage`, every Slack connector write tool, and all other Slack writes.
+- Subagents share the run's connectors and network secrets. Delegate only to a subagent whose `tools` allowlist names no Slack connector tool, and no `Bash` or web tool when the environment holds a Slack network secret. Otherwise the coordinator does the work.
 - Never give a child a Slack token, posting instructions, source coordinates for posting, or permission to report externally.
 - If a child needs Slack write access to run, do not launch it.
 - Utility bots are evidence sources. They do not own the fix unless a person explicitly delegated the fix to them.
@@ -27,6 +30,7 @@ Load the external Benny configuration supplied by the automation. If the config,
 - No confirmed repro means no authored fix.
 - Existing pull requests or commits switch the run to verify mode. Do not author over them.
 - Use `github.com` pull request links.
+- Create and read pull requests through the GitHub REST API with `gh api`. Cloud sessions reject GraphQL, so `gh pr` fails there.
 - Keep captures, recordings, logs, and tokens out of source control.
 - Use pstack's `principle-guard-the-context-window` for delegated analysis.
 - Apply pstack's `principle-sequence-verifiable-units`, `principle-fix-root-causes`, and `principle-prove-it-works` through repro, fix, and verification.
@@ -55,7 +59,7 @@ If any check fails, post nothing. Never retry at the root or in a fallback chann
 
 ## 2. Wait for the triage contract
 
-Watch the source thread for the configured verdict budget. Stay silent while waiting.
+Watch the source thread for the configured verdict budget. Stay silent while waiting. When the marker has not landed by the end of this run, record the `waiting_verdict` stage and its deadline in the ledger and end. A later run resumes the wait.
 
 Accept a verdict only when:
 
@@ -119,9 +123,9 @@ Use the configured plain Unicode status strings. Keep status text short:
 - Draft pull request opened
 - Fix did not land
 
-Prefer configured Cursor Slack actions. Use `BENNY_SLACK_BOT_TOKEN` only when the user configured it for a narrow missing capability such as editing this one status message. Never expose the token to a worker.
+Prefer the configured Slack connector actions. Use the optional Slack bot token, held as a network secret on the task's cloud environment, only when the user configured it for a narrow missing capability such as editing this one status message. Never give a worker a tool that can reach it.
 
-If no operations channel is configured, keep detailed status in the automation run output. Do not substitute a source-channel root message.
+If no operations channel is configured, keep detailed status in the scheduled run's transcript. Do not substitute a source-channel root message.
 
 ## 5. Load and check the control adapter
 
@@ -201,7 +205,7 @@ Post detailed evidence only in the operations thread when configured. Keep the s
 
 Update the operations status first.
 
-For `Could not reproduce` or `Blocked`, post nothing in the source thread. The operations thread or run output carries the result.
+For `Could not reproduce` or `Blocked`, post nothing in the source thread. The operations thread or run transcript carries the result.
 
 For a confirmed repro, run the source preflight and post at most one unprompted source reply:
 
@@ -213,7 +217,7 @@ For a confirmed repro, run the source preflight and post at most one unprompted 
 
 Attach evidence only when the configured Slack action keeps it inside the same source thread and the organization's retention policy allows it.
 
-Wait for the configured rejection window. If a person shows that the setup or interpretation was wrong, correct the repro once. Do not start the fix phase until the window closes without a valid rejection.
+Wait for the configured rejection window. If a person shows that the setup or interpretation was wrong, correct the repro once. Do not start the fix phase until the window closes without a valid rejection. When the window outlasts this run, record the `rejection_window` stage and its deadline in the ledger and end.
 
 ## 10. Verify an existing fix
 
@@ -288,19 +292,20 @@ Only after before-and-after proof:
 - Review the final diff for unrelated changes and secrets.
 - Run the repository's required checks.
 - Create small ordered commits when the repository workflow allows it.
-- Open a draft pull request. Never merge or deploy from this workflow.
+- Push the fix to `repository.fix_branch_prefix` plus the root timestamp with its dot replaced, so a retried run finds the same branch. Before opening a pull request, list open and closed pull requests for that head branch with `gh api` and reuse a match instead of opening a second one.
+- Open a draft pull request with `gh api repos/{owner}/{repo}/pulls -f title=... -f head=... -f base=... -f body=... -F draft=true`. Never merge or deploy from this workflow.
 - Link the configured tracker issue using the tracker's supported pull request syntax.
 - Use the configured public URL form, normally `https://github.com/{owner}/{repo}/pull/{number}`.
 - Include the repro steps, root cause, test result, before and after evidence, and blast-radius checks.
 - Run the pull request text and all Slack updates through pstack's `unslop` skill.
 
-If pull request creation fails, do not claim success. Keep the commit or branch state in the run output and mark operations status `Fix did not land`.
+If pull request creation fails, do not claim success. Keep the commit or branch state in the run transcript and the ledger and mark operations status `Fix did not land`.
 
 On success, mark operations status `Draft pull request opened` and post one concise reply in the operations thread with the linked pull request. Do not create a second source-channel root or unprompted source reply.
 
 ## 15. Follow-ups and cleanup
 
-Watch the configured operations thread for one follow-up window.
+Watch the configured operations thread for one follow-up window. When the window outlasts this run, record it in the ledger and let a later run finish it.
 
 - Answer a direct question from evidence already gathered.
 - Apply one concrete correction and rerun the repro once when it invalidates the setup.

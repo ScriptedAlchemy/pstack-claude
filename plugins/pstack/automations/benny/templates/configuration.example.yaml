@@ -1,8 +1,20 @@
 schema_version: 1
 
-automations:
+scheduled_tasks:
   triage_name: "benny-triage"
   reproduce_name: "benny-reproduce"
+
+schedule:
+  triage_cron: "7 * * * *"
+  reproduce_cron: "37 * * * *"
+  max_reports_per_run: 5
+
+ledger:
+  triage_branch: "claude/benny-triage-ledger"
+  reproduce_branch: "claude/benny-reproduce-ledger"
+  file: "ledger.json"
+  start_after_ts: "START_AFTER_TS"
+  lease_minutes: 240
 
 slack:
   source_channel_id: "SOURCE_CHANNEL_ID"
@@ -12,15 +24,16 @@ slack:
   thread_post_action: "configured-slack-thread-post-action"
   file_download_action: "configured-slack-file-download-action"
   operations_edit_action: "configured-slack-edit-action"
-  prefer_cursor_actions: true
-  optional_bot_token_env: "BENNY_SLACK_BOT_TOKEN"
+  prefer_connector_actions: true
+  optional_bot_token_network_secret_host: "slack.com"
   allow_source_root_posts: false
   allow_worker_slack_writes: false
 
 repository:
   url: "https://github.com/example-org/example-repo"
   default_branch: "main"
-  pull_request_action: "configured-draft-pull-request-action"
+  pull_request_action: "gh api repos/{owner}/{repo}/pulls"
+  fix_branch_prefix: "claude/benny-fix-"
   pull_request_url_format: "https://github.com/{owner}/{repo}/pull/{number}"
   draft_only: true
 
@@ -39,14 +52,14 @@ tracker:
   require_compensation_action: true
 
 routing:
-  map_path: ".cursor/benny/routing.md"
+  map_path: ".claude/benny/routing.md"
   owner_pings_default: false
   allow_feature_owner_ping: false
   allow_confirmed_regression_author_ping: false
 
 control:
   skill_name: "control-target-app"
-  feature_map_path: ".cursor/benny/feature-map.md"
+  feature_map_path: ".claude/benny/feature-map.md"
   environment: "safe-test-environment-placeholder"
   artifact_directory: "/tmp/benny-artifacts"
   artifact_retention_hours: 24
@@ -68,17 +81,16 @@ status_emoji:
   pull_request_opened: "🔗"
 
 budgets:
-  poll_seconds: 45
-  verdict_wait_minutes: 45
-  triage_follow_up_minutes: 10
+  verdict_wait_minutes: 180
+  triage_follow_up_minutes: 120
   triage_total_minutes: 30
   repro_minutes: 60
-  rejection_window_minutes: 10
+  rejection_window_minutes: 60
   fix_minutes: 90
-  operations_follow_up_minutes: 45
+  operations_follow_up_minutes: 120
 
 models:
-  triage: "choose-an-available-public-model-slug"
-  reproduce: "choose-an-available-public-model-slug"
-  code: "choose-an-available-public-model-slug"
-  media_review: "choose-an-available-public-model-slug"
+  triage: "choose-a-model-from-the-task-model-selector"
+  reproduce: "choose-a-model-from-the-task-model-selector"
+  code: "choose-an-agent-tool-model-and-effort"
+  media_review: "choose-an-agent-tool-model-and-effort"

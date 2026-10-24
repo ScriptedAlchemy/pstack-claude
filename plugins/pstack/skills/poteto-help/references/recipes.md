@@ -16,7 +16,7 @@ Swap in the real paths, skills, and done checks. Informal wording works.
 ## Build
 
 - Bug: `/pstack:poteto-mode <symptom>. repro first, then fix and verify.`
-- Bug in an app: `/pstack:poteto-mode repro this with /verify-<app>. if it repros on main, fix it and show me a video as proof.`
+- Bug in an app: `/pstack:poteto-mode repro this with /verify. if it repros on main, fix it and show me a video as proof.`
 - Bug with a cheap test: `/pstack:poteto-mode repro <bug> first. if there's a cheap test path, /pstack:tdd it. then fix and rerun.`
 - Feature: `/pstack:poteto-mode add <behavior>. <current output> stays byte-identical. verify both.`
 - Refactor: `/pstack:poteto-mode move <code> into one module, zero behavior change. record the current output first and prove it's unchanged after.`

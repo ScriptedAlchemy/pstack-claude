@@ -90,7 +90,7 @@ continue
 keep going until done
 ```
 
-Short works because the playbook holds the structure, and a Custom Mode keeps `/pstack:poteto-mode` in context on every turn. [Set up pstack](./01-setup.md#run-your-first-task) shows how to start one. Your words carry the intent, and the skill carries the rigor.
+Short works because the playbook holds the structure, and `/pstack:poteto-mode` stays in the conversation once you've typed it. [Set up pstack](./01-setup.md#run-your-first-task) shows how to keep it on in every session. Your words carry the intent, and the skill carries the rigor.
 
 ## Switch tasks with "new task"
 
@@ -104,7 +104,7 @@ A long chat accumulates context from the last task. When you change subjects, sa
 
 ## Give parallel work its own machine
 
-If you run several agents against one repository on one computer, they will fight over the working tree, the ports, and the build output. The cleanest isolation is a [cloud subagent](https://cursor.com/docs/subagents#cloud-subagents). Each one gets its own VM and branch, so it can install dependencies, run your app, and record video of the result without touching your machine. Type `/in-cloud` before the task, or ask the parent chat to hand work to cloud subagents.
+If you run several agents against one repository on one computer, they will fight over the working tree, the ports, and the build output. The cleanest isolation is a cloud session on [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web). Each one gets its own VM and branch, so it can install dependencies, run your app, and record video of the result without touching your machine. Run `claude --cloud "<task>"` from your terminal to start one. A cloud session doesn't load plugins installed on your machine, so to run several pstack tasks in the cloud, use a Project with pstack added, as [Run many projects in parallel](./07-overnight.md#run-many-projects-in-parallel) describes.
 
 When the work has to stay local, ask for a worktree up front:
 

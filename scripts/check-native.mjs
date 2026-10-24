@@ -22,7 +22,7 @@ const skills = readdirSync(join(PLUGIN, "skills")).filter((name) => existsSync(j
 const bareCommand = new RegExp(`(?<![\\w:./@-])/(${skills.join("|")})(?![\\w/-])`);
 
 const RULES = [
-  { re: /cursor/i, fix: "Claude Code name, or an allowlisted attribution" },
+  { re: /(?<![a-z])cursor(?![a-z])/i, fix: "Claude Code name, or an allowlisted attribution" },
   { re: /`Task`|\bTask (tool|subagent|call)/, fix: "the `Agent` tool" },
   { re: /\bAskQuestion\b/, fix: "`AskUserQuestion`" },
   { re: /generalPurpose/, fix: '`subagent_type: "general-purpose"`' },
@@ -34,6 +34,7 @@ const RULES = [
   { re: /agent-transcripts/, fix: "`~/.claude/projects/<slug>/<session>.jsonl`" },
   { re: /Bugbot|[Aa]utomations? (routine|run)|cloud agent|built-in PR tool|SendToUser|update_state/, fix: "a Claude Code equivalent or an explicit skip" },
   { re: /Claude Code adapter|docs\/harness/, fix: "nothing; the port is native" },
+  { re: /\bdeslop\b|control-(ui|cli)\b/, fix: "the bundled `/simplify`, or the project verify skill and the bundled `run`" },
   { re: bareCommand, fix: "`/pstack:<name>`" },
   { re: /(?<![\w:-])(poteto-agent|comment-sicko)(?=["`])/, fix: "`pstack:poteto-agent` or `pstack:comment-sicko`" },
 ];
