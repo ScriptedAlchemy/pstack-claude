@@ -92,5 +92,5 @@ budgets:
 models:
   triage: "choose-a-model-from-the-task-model-selector"
   reproduce: "choose-a-model-from-the-task-model-selector"
-  code: "choose-an-agent-tool-model-and-effort"
-  media_review: "choose-an-agent-tool-model-and-effort"
+  code: "choose-a-model-and-effort-for-benny-coder"
+  media_review: "choose-a-model-and-effort-for-benny-reader"

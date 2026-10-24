@@ -23,7 +23,7 @@ The runner in `../../SCHEDULING.md` supplies the trigger, owns the ledger, and r
 - The coordinator is the only Slack poster.
 - Delegated workers return findings only. They must be read-only and receive no Slack credentials or write actions.
 - Every child prompt must forbid `SendSlackMessage`, `PostToSlack`, `chat.postMessage`, every Slack connector write tool, and every other Slack write.
-- Subagents share the run's connectors and network secrets. Delegate only to a subagent whose `tools` allowlist names no Slack connector tool, and no `Bash` or web tool when the environment holds a Slack network secret.
+- Subagents share the run's connectors and network secrets. Delegate only with `subagent_type: "benny-reader"`, whose `tools` allowlist in the repository's `.claude/agents/` names no Slack connector tool, `Bash`, or web tool. If that definition is missing, or its `tools` line names more than `Read`, `Grep`, and `Glob`, do the work in the coordinator.
 - If worker isolation cannot enforce those limits, do the work in the coordinator.
 - Never create an issue that cannot link back to the source thread.
 - Prefer no ticket over a guessed or duplicate ticket.

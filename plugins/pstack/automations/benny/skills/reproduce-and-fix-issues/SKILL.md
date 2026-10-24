@@ -21,7 +21,7 @@ The runner in `../../SCHEDULING.md` supplies the trigger, owns the ledger, and r
 - Delegated analysis workers are read-only and return findings or media notes.
 - A fix-phase code worker may edit only when its environment provably excludes Slack credentials and every Slack write action. Otherwise the coordinator edits.
 - Every child prompt must explicitly forbid `SendSlackMessage`, `PostToSlack`, `chat.postMessage`, every Slack connector write tool, and all other Slack writes.
-- Subagents share the run's connectors and network secrets. Delegate only to a subagent whose `tools` allowlist names no Slack connector tool, and no `Bash` or web tool when the environment holds a Slack network secret. Otherwise the coordinator does the work.
+- Subagents share the run's connectors and network secrets. Delegate only with `subagent_type: "benny-reader"` for read-only analysis and media review, or `subagent_type: "benny-coder"` for a fix-phase edit. Their `tools` allowlists in the repository's `.claude/agents/` name no Slack connector tool, `Bash`, or web tool. If either definition is missing, or its `tools` line names more than its template does, the coordinator does the work.
 - Never give a child a Slack token, posting instructions, source coordinates for posting, or permission to report externally.
 - If a child needs Slack write access to run, do not launch it.
 - Utility bots are evidence sources. They do not own the fix unless a person explicitly delegated the fix to them.
@@ -257,7 +257,7 @@ Read-only workers may:
 
 They do not edit, run external writes, post status, or own the fix.
 
-A tightly scoped code edit may be delegated during this phase only when tool isolation removes Slack credentials and every Slack write action from that worker. Its prompt must still carry the explicit Slack-write ban. The coordinator reviews the edit and runs or verifies the required tests. If tool isolation is uncertain, keep the edit in the coordinator.
+A tightly scoped code edit may be delegated during this phase only to `benny-coder`, whose tool allowlist removes Slack credentials and every Slack write action. Its prompt must still carry the explicit Slack-write ban. The coordinator reviews the edit and runs or verifies the required tests. If tool isolation is uncertain, keep the edit in the coordinator.
 
 Confirm the mechanism with runtime evidence. Eliminate competing hypotheses before editing.
 

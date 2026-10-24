@@ -25,7 +25,7 @@ Infer the need from the message and the conversation. A named situation, such as
 Check the state that changes the answer, and mention it only when it does:
 
 - No `~/.claude/rules/pstack-models.md` means `/pstack:setup-pstack` hasn't run for this user, so every role uses its default model.
-- No `.claude/skills/verify/` skill or other app harness in the project means agents have no scripted way to drive the app. Mention `/pstack:create-verification-skill` when the question is about proving a change works.
+- No `verify-*` skill under `.claude/skills/` or other app harness in the project means agents have no scripted way to drive the app. Mention `/pstack:create-verification-skill` when the question is about proving a change works.
 - No formal verification skill in the project means no property is checked past what tests reach. Mention `/pstack:create-formal-verification-skill` when the question is about a race, an invariant, or another case tests rarely hit. When one exists and the code it covers changed after the commit it records as last in sync, mention `/pstack:maintain-formal-verification-skill` if the question touches that code.
 
 When the model rule is missing and it matters, ask whether the user wants to pick a model for each role and a reasoning budget now. It matters when the user is new, the question is about setup or cost, or the answer depends on which models run. Ask at most once per chat. If the need is also unclear, ask both questions together. Offer two choices:
@@ -51,7 +51,7 @@ Other tools can read the skills, because they use the Agent Skills format. But m
 
 Whether `/pstack:poteto-mode` stays on depends on how the user starts it:
 
-- `/pstack:poteto-mode` attaches the skill to one message. It fades as the chat moves on.
+- Typing `/pstack:poteto-mode` adds the skill to the conversation, and it stays there on later turns. After compaction, Claude Code re-attaches only the start of a long skill, and a new session starts without it.
 - A line in the project's `CLAUDE.md`, or in `~/.claude/CLAUDE.md` for every project, that tells the agent to read and follow pstack's `poteto-mode` skill keeps it in context every turn. It also applies on casual turns, so remove the line when the user wants it off.
 - Without that line, start each new task with `/pstack:poteto-mode`.
 
@@ -114,7 +114,7 @@ Close calls:
 Not in pstack:
 
 - `/simplify`, which cleans up a diff, ships with Claude Code.
-- `run`, which launches and drives CLIs, servers, and browser or Electron apps, ships with Claude Code. A project's own driver skill lives at `.claude/skills/verify/`, and `/pstack:create-verification-skill` generates one.
+- `run`, which launches and drives CLIs, servers, and browser or Electron apps, ships with Claude Code. A project's own driver skill lives at `.claude/skills/verify-<app>/`, and `/pstack:create-verification-skill` generates one.
 - `/loop` ships with Claude Code. Skill authoring uses the `skill-creator` skill when it is installed.
 - pstack has no `/orchestrate` skill. Orchestrate is a `/pstack:poteto-mode` playbook. If the slash menu shows `/orchestrate`, another plugin provides it.
 

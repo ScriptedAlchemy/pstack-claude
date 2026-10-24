@@ -71,8 +71,8 @@ fi
 
 # Transcripts: ~/.claude/projects/<slug>/<session>.jsonl, with subagent
 # transcripts under <session>/subagents/. The slug is the absolute path with
-# every / and . turned into -.
-slugify() { printf '%s' "$1" | sed 's#[/.]#-#g'; }
+# every character that is not a letter or digit turned into -.
+slugify() { printf '%s' "$1" | sed 's#[^A-Za-z0-9]#-#g'; }
 projects="$HOME/.claude/projects"
 now=$(date +%s)
 

@@ -34,6 +34,7 @@ const RULES = [
   { re: /agent-transcripts/, fix: "`~/.claude/projects/<slug>/<session>.jsonl`" },
   { re: /Bugbot|[Aa]utomations? (routine|run)|cloud agent|built-in PR tool|SendToUser|update_state/, fix: "a Claude Code equivalent or an explicit skip" },
   { re: /Claude Code adapter|docs\/harness/, fix: "nothing; the port is native" },
+  { re: /fast or standard speed|`origin pr|command -v origin/, fix: "effort only, and `gh` as the only forge" },
   { re: /\bdeslop\b|control-(ui|cli)\b/, fix: "the bundled `/simplify`, or the project verify skill and the bundled `run`" },
   { re: bareCommand, fix: "`/pstack:<name>`" },
   { re: /(?<![\w:-])(poteto-agent|comment-sicko)(?=["`])/, fix: "`pstack:poteto-agent` or `pstack:comment-sicko`" },

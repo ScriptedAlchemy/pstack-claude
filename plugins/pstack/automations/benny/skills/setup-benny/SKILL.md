@@ -116,7 +116,7 @@ Ask for or confirm:
 - Verdict, follow-up, rejection, repro, and fix budgets
 - Model for triage, repro, code work, and media review
 
-Each task runs on the model chosen in its prompt's model selector, so pick triage and repro models from that selector. Code work and media review run as subagents, so give each an `Agent` tool `model` (`opus`, `sonnet`, `haiku`, or `fable`) and an effort. Do not guess a model and do not carry over a private default.
+Each task runs on the model chosen in its prompt's model selector, so pick triage and repro models from that selector. Code work and media review run as the `benny-coder` and `benny-reader` subagents, so give each a `model` (`opus`, `sonnet`, `haiku`, or `fable`) and an effort, which section 4 writes into their definitions. Do not guess a model and do not carry over a private default.
 
 Set each wait window to at least one schedule interval. A window shorter than the interval closes before the next run can look.
 
@@ -150,7 +150,7 @@ If the owner has no Slack connector with these actions, stop. Benny cannot run w
 
 Prefer the configured Slack connector actions for reads and posts. An optional Slack bot token may fill a narrow gap such as editing one operations status message or downloading an attachment. Store it as a network secret on the task's cloud environment, limited to `slack.com`. Never put it in an environment variable, because anyone who uses the environment can read those.
 
-Subagents share the run's connectors and network secrets. If the user wants delegated workers, offer a subagent definition in the target repository's `.claude/agents/` whose `tools` allowlist names only read tools, with no Slack connector tool, and no `Bash` or web tool when a Slack network secret is attached. Without one, the coordinator does the work.
+Subagents share the run's connectors and network secrets, so Benny delegates only to the two agent definitions in this pack's `templates/`. `benny-reader.md` allows only `Read`, `Grep`, and `Glob`, for read-only analysis and media review. `benny-coder.md` adds `Edit` and `Write`, for one scoped fix-phase edit. Neither names a Slack or other connector tool, `Bash`, a web tool, or `Agent`. If the user wants delegated workers, copy both to the target repository's `.claude/agents/`, set `benny-reader.md`'s `model` and `effort` from `models.media_review` and `benny-coder.md`'s from `models.code`, and never add a tool to either `tools` line. Without them, the coordinator does the work.
 
 Do not use undocumented integration endpoints.
 

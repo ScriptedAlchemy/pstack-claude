@@ -12,7 +12,7 @@ Invoke when the user says "reflect" or "/pstack:reflect". Skip when the conversa
 
 ## 1. Locate the active transcript
 
-Before fanning out, find this conversation's transcript in this workspace's folder, `~/.claude/projects/<slug>/`. The slug is the workspace path with each `/` and `.` changed to `-`, so `/Users/you/proj` is `-Users-you-proj`. Do not glob across `~/.claude/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects.
+Before fanning out, find this conversation's transcript in this workspace's folder, `~/.claude/projects/<slug>/`. The slug is the absolute workspace path with every character that is not a letter or digit changed to `-`, so `/Users/you/my_proj` is `-Users-you-my-proj`. Do not glob across `~/.claude/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects.
 
 ```bash
 ls -t ~/.claude/projects/<slug>/*.jsonl ~/.claude/projects/<slug>/*/subagents/*.jsonl 2>/dev/null | head -10
@@ -48,7 +48,7 @@ Present the synthesizer's full Accepted / Rejected / Backlog output and wait for
 
 File each Backlog item to your team's devex or backlog tracker without waiting. Only the Accepted list waits for approval.
 
-Never edit a skill under `plugins/cache/`. Before approval, show its destination, `.claude/skills/<skill>/` or `~/.claude/skills/<skill>/`. After approval, copy the skill folder there and edit the copy. Never open a PR or push.
+Never edit a skill under `plugins/cache/`. Before approval, show its destination, `.claude/skills/<skill>/` or `~/.claude/skills/<skill>/`. After approval, copy the skill folder there and edit the copy. The copy's relative links to sibling skills, such as `../how/`, break once it leaves the plugin, so copy only the files the edit needs and rewrite those links to the installed plugin's absolute path. To change a skill wholesale, edit a fork of this repository instead. Never open a PR or push.
 
 Follow each approved row's Routing exactly:
 

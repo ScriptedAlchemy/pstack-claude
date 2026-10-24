@@ -25,7 +25,7 @@ If a candidate produces no output, proceed with N-1 and note the dropout.
 
 ## Phase C: Cross-judge
 
-After all Phase B candidates complete, choose one model from the `arena cross-judge pool` line in `~/.claude/rules/pstack-models.md`. If the rule or that line is missing, choose from `opus xhigh` and `sonnet xhigh`. Prefer a model that differs from the parent session's model. Spawn one judge subagent on that model with `subagent_type: "general-purpose"`, and tell it not to edit files. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with your reading in Phase D. Don't spawn it while candidates are still writing.
+After all Phase B candidates complete, choose one model from the `arena cross-judge pool` line in `~/.claude/rules/pstack-models.md`. If the rule or that line is missing, choose from `opus xhigh` and `sonnet xhigh`. Prefer a model that differs from the parent session's model. Spawn one judge subagent on that model with `subagent_type: "general-purpose"`, and tell it not to edit files. Note `git status` before you spawn it, and after it returns, check `git status` again for edits it should not have made. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with your reading in Phase D. Don't spawn it while candidates are still writing.
 
 ## Phase D: Pick a base
 

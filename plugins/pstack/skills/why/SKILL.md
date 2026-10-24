@@ -10,7 +10,7 @@ Investigate the motivation and intent behind code. The companion `how` skill ans
 
 Each spawn below names a role line in `~/.claude/rules/pstack-models.md` and a default. Set `model` and `effort` from that line's `<model> <effort>` value, or from the default if the rule or the line is missing. Leave `model` unset when the value is `auto` or `inherit-parent`. If the `Agent` tool rejects a value, use the default and say so. If it rejects the default, use the closest valid value from its error message. Pick each subagent's reasoning level for the job, per the Subagents section of the [**poteto-mode**](../poteto-mode/SKILL.md#subagents) skill.
 
-Every spawn is `subagent_type: "general-purpose"`. **Do not use a subagent type that drops tools.** Without MCP access the MCP-backed investigators and the synthesizer's citation spot-checks stop working. Investigators still shouldn't write anything, so each brief says not to edit files.
+Every spawn is `subagent_type: "general-purpose"`. **Do not use a subagent type that drops tools.** Without MCP access the MCP-backed investigators and the synthesizer's citation spot-checks stop working. Investigators still shouldn't write anything, so each brief says not to edit files. After they return, check `git status` for edits they should not have made.
 
 ## Operating Posture
 

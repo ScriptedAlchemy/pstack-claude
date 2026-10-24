@@ -26,7 +26,7 @@ Update mode changes the rest of the flow:
 
 ### 1. Mine their history
 
-Locate the active workspace's transcripts before fanning out. They are the `.jsonl` files in `~/.claude/projects/<slug>/`, where `<slug>` is the workspace path with each `/` and `.` changed to `-` (`/Users/you/proj` is `-Users-you-proj`). Use only that folder. Don't glob across `~/.claude/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects.
+Locate the active workspace's transcripts before fanning out. They are the `.jsonl` files in `~/.claude/projects/<slug>/`, where `<slug>` is the absolute workspace path with every character that is not a letter or digit changed to `-` (`/Users/you/my_proj` is `-Users-you-my-proj`). Use only that folder. Don't glob across `~/.claude/projects/*/`. That crosses workspace boundaries and reads private chats from unrelated projects.
 
 Survey recent agent conversations within that scope for recurring patterns. Run multiple parallel subagents across slices of history (e.g. last 2-4 weeks, split into 3 slices so each has enough material). Pick each subagent's reasoning effort for the job, per the Subagents section of the **poteto-mode** skill. Each slice mining subagent reads transcripts from the workspace-scoped path the parent provides, looks for the signals below, and returns a short structured list of patterns it saw with evidence pointers. Default signals worth hunting:
 
