@@ -28,21 +28,15 @@ while IFS=$'\t' read -r status path; do
     continue
   fi
   case "$status" in
-    A)
-      mkdir -p "$(dirname "$ours")"
-      git show "$target:$path" > "$ours"
-      echo "added    $ours"
-      ;;
-    D)
-      rm -f "$ours"
-      echo "deleted  $ours"
-      ;;
-    M)
-      git show "$pinned:$path" > "$tmp/base"
+    A | M)
+      if [[ "$status" == A ]]; then : > "$tmp/base"; else git show "$pinned:$path" > "$tmp/base"; fi
       git show "$target:$path" > "$tmp/theirs"
+      mkdir -p "$(dirname "$ours")"
       if [[ ! -f "$ours" ]]; then
         cp "$tmp/theirs" "$ours"
-        echo "restored $ours"
+        echo "added    $ours"
+      elif cmp -s "$ours" "$tmp/theirs"; then
+        echo "same     $ours"
       elif git merge-file -L port -L "upstream@${pinned:0:7}" -L "upstream@${target:0:7}" "$ours" "$tmp/base" "$tmp/theirs"; then
         echo "merged   $ours"
       else
@@ -50,11 +44,15 @@ while IFS=$'\t' read -r status path; do
         echo "CONFLICT $ours"
       fi
       ;;
+    D)
+      rm -f "$ours"
+      echo "deleted  $ours"
+      ;;
   esac
 done < <(git diff --name-status --no-renames "$pinned" "$target" -- pstack)
 
 node scripts/codemod.mjs > /dev/null
-for path in "${skipped[@]}"; do echo "review by hand (no direct counterpart): $path"; done
-for path in "${conflicts[@]}"; do echo "resolve: $path"; done
+for path in ${skipped[@]+"${skipped[@]}"}; do echo "review by hand (no direct counterpart): $path"; done
+for path in ${conflicts[@]+"${conflicts[@]}"}; do echo "resolve: $path"; done
 echo "Next: resolve conflicts, port new Cursor names per PORTING.md until scripts/check-native.mjs passes,"
 echo "then set UPSTREAM.json to $target and bump the plugin version."
