@@ -10,7 +10,7 @@ Start smaller than you think. You don't need many skills on day one, or even thi
 /pstack:automate-me
 ```
 
-You don't describe your style, because [`/pstack:automate-me`](../../skills/automate-me/SKILL.md) reads it out of your history. It mines your recent transcripts in the active workspace for repeated preferences, in how you like replies, delegation, verification, code, prose, and process, then asks you which patterns are really you. It drafts `.claude/skills/<your-name>-mode/SKILL.md` through Cursor's built-in `create-skill` flow, runs the draft through [`/pstack:unslop`](../../skills/unslop/SKILL.md), and opens a PR from a worktree so you review it like any other change.
+You don't describe your style, because [`/pstack:automate-me`](../../skills/automate-me/SKILL.md) reads it out of your history. It mines your recent transcripts in the active workspace for repeated preferences, in how you like replies, delegation, verification, code, prose, and process, then asks you which patterns are really you. It drafts `.claude/skills/<your-name>-mode/SKILL.md` through the `skill-creator` skill when you have one installed, runs the draft through [`/pstack:unslop`](../../skills/unslop/SKILL.md), and opens a PR from a worktree so you review it like any other change.
 
 Run it again whenever your habits drift:
 
@@ -19,6 +19,12 @@ Run it again whenever your habits drift:
 ```
 
 Update mode mines only the history since the skill last changed. It keeps rules you haven't contradicted, revises the ones with new evidence, and adds sections only for new patterns.
+
+## Capture maintainers and teams
+
+Use [`/pstack:automate-maintainer`](../../skills/automate-maintainer/SKILL.md) with a GitHub login or a list of logins and a repository scope. It studies authored code, commits, reviews, issues, and discussions, then drafts individual modes and a group mode with evidence links.
+
+Use [`/pstack:automate-team`](../../skills/automate-team/SKILL.md) with a repository to discover its active core contributors first. It builds a team mode from shared standards, specialized ownership, and documented differences. Neither mode speaks for the contributors or grants their approval.
 
 ## Capture a session's lessons with `/pstack:reflect`
 
@@ -57,7 +63,7 @@ When you already know the workflow you want to capture:
 /pstack:poteto-mode write a skill for verifying database migrations in this repo
 ```
 
-Writing a skill matches the [Authoring or modifying a skill playbook](../../skills/poteto-mode/playbooks/authoring-a-skill.md), which routes through Cursor's built-in `create-skill`, validates the frontmatter and links, and ships the result through the Opening a PR playbook. Agent-facing prose has a higher bar than human prose, because an unhelpful sentence becomes an instruction some future agent follows. Let the playbook hold that bar rather than writing a `SKILL.md` freehand.
+Writing a skill matches the [Authoring or modifying a skill playbook](../../skills/poteto-mode/playbooks/authoring-a-skill.md), which routes through the `skill-creator` skill when you have one installed, validates the frontmatter and links, and ships the result through the Opening a PR playbook. Agent-facing prose has a higher bar than human prose, because an unhelpful sentence becomes an instruction some future agent follows. Let the playbook hold that bar rather than writing a `SKILL.md` freehand.
 
 Two special cases have their own generators. A skill that must drive your app and prove behavior is a verification skill, so use [`/pstack:create-verification-skill`](../../skills/create-verification-skill/SKILL.md) and [`/pstack:maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) instead. A skill that checks a property of your code with a model checker, a proof, or another verifier is a formal verification skill, so use [`/pstack:create-formal-verification-skill`](../../skills/create-formal-verification-skill/SKILL.md) and [`/pstack:maintain-formal-verification-skill`](../../skills/maintain-formal-verification-skill/SKILL.md). [Verify and ship](./06-verify-and-ship.md#prove-a-property-with-a-formal-verification-skill) covers both kinds.
 
@@ -93,7 +99,7 @@ Read every output yourself before accepting the verdict. If you disagree with th
 
 ## Build a bot UI with `/pstack:make-bot-ui`
 
-One situational skill is for Grok Bot users. [`/pstack:make-bot-ui`](../../skills/make-bot-ui/SKILL.md) builds a small page whose buttons wake a bot over a webhook routine. For example, you could swipe through a review queue and have each swipe ask the bot to act on that item. A server on your machine holds the webhook's sender key, so the key never reaches the browser or the chat. The skill also covers exposing the page on Tailscale.
+One situational skill is for running a Claude bot from GitHub Actions. [`/pstack:make-bot-ui`](../../skills/make-bot-ui/SKILL.md) builds a small page whose buttons wake the bot through a `workflow_dispatch` workflow that runs `anthropics/claude-code-action`. For example, you could swipe through a review queue and have each swipe ask the bot to act on that item. A server on your machine holds the dispatch token, so the token never reaches the browser or the chat. The skill also covers exposing the page on Tailscale.
 
 **Pitfall:** don't edit a skill mid-task because it's misbehaving. Fix it in its own PR and keep the task moving. A skill edit that ships tangled into feature work is invisible to review and impossible to evaluate.
 
