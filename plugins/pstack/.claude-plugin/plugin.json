@@ -1,6 +1,6 @@
 {
   "name": "pstack",
-  "version": "0.15.32-claude.1",
+  "version": "0.15.36-claude.1",
   "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence. a Claude Code-native port of Lauren Tan's pstack.",
   "author": {
     "name": "Lauren Tan",
