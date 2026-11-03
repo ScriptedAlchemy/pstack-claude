@@ -74,6 +74,8 @@ The override sheet is `~/.claude/rules/pstack-models.md`, with no frontmatter. C
 | The Origin forge (`origin pr ...`) | `gh` only. Drop forge-selection steps. |
 | Cursor Projects | [Claude Code Projects](https://code.claude.com/docs/en/claude-projects). Cloud threads do not load local plugins, so pstack is added in the project's settings. |
 | Cursor's model picker | `/model`. |
+| The Project tracker (`notes.md`) and the Project store | The session's task list (`TaskCreate`/`TaskUpdate`, or `TodoWrite`, whichever the session offers) plus a durable notes file the coordinator owns, such as `orchestrate/<project-slug>/` in the repo. |
+| PR and CI event subscriptions | None. Claude Code wakes on subagent completion, not on forge events. Check live state with `gh pr view` and `gh pr checks` when a step needs it, and never poll. |
 
 When a step has no Claude Code equivalent at all, write one line in the reply, `Skipped: <step>. <reason>.`, and continue. Do not stop, ask, or retry.
 
